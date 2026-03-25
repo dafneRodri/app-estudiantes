@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de Tareas</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Gestor de Tareas</h1>
+
+    <!-- 🔹 Pestañas -->
+    <div class="tabs">
+        <div class="tab active" data-tab="upload">Subir Tarea</div>
+        <div class="tab" data-tab="pending">Tareas Pendientes</div>
+        <div class="tab" data-tab="completed">Tareas Completadas</div>
+    </div>
+
+    <!-- 🔹 Secciones -->
+    <div id="upload" class="section active">
+        <form class="task-form" id="taskForm">
+            <input type="text" id="taskName" placeholder="Nombre de la tarea" required>
+            <textarea id="taskDesc" placeholder="Descripción" rows="3" required></textarea>
+            <button type="submit">Agregar Tarea</button>
+        </form>
+        <div class="loading" id="loading">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <div id="pending" class="section">
+        <div class="task-list" id="pendingList"></div>
+    </div>
+
+    <div id="completed" class="section">
+        <div class="task-list" id="completedList"></div>
+    </div>
+</div>
+
+<script>
+    // 🔹 Pestañas
+    const tabs = document.querySelectorAll('.tab');
+    const sections = document.querySelectorAll('.section');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+    });
+
+    // 🔹 Manejo de tareas
+    let tasks = [];
+
+    const taskForm = document.getElementById('taskForm');
+    const loading = document.getElementById('loading');
+    const pendingList = document.getElementById('pendingList');
+    const completedList = document.getElementById('completedList');
+
+    function updateTasks() {
+        pendingList.innerHTML = '';
+        completedList.innerHTML = '';
+
+        const now = new Date();
+
+        tasks.forEach((task, index) => {
+            const div = document.createElement('div');
+            div.className = 'task-item' + (task.completed ? ' completed' : '');
+            div.innerHTML = `
+                <div class="task-info">
+                    <strong>${task.name}</strong>
+                    <p>${task.desc}</p>
+                    ${!task.completed ? <div class="task-time">Hace ${Math.floor((now - task.time)/60000)} min</div> : ''}
+                </div>
+                <div class="task-buttons">
+                    ${!task.completed ? <button class="btn-complete" data-index="${index}">Completar</button> : ''}
+                    <button class="btn-delete" data-index="${index}">Eliminar</button>
+                </div>
+            `;
+
+            if(task.completed){
+                completedList.appendChild(div);
+            } else {
+                pendingList.appendChild(div);
+            }
+        });
+
+        document.querySelectorAll('.btn-complete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const i = btn.dataset.index;
+                tasks[i].completed = true;
+                updateTasks();
+            });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const i = btn.dataset.index;
+                tasks.splice(i, 1);
+                updateTasks();
+            });
+        });
+    }
+
+    taskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('taskName').value;
+        const desc = document.getElementById('taskDesc').value;
+
+        loading.style.display = 'block';
+
+        setTimeout(() => {
+            tasks.push({name, desc, completed: false, time: new Date()});
+            taskForm.reset();
+            loading.style.display = 'none';
+            updateTasks();
+        }, 800);
+    });
+
+    setInterval(updateTasks, 60000);
+</script>
+<title>App Estudiantes</title>
+</head>
+
+<body>
+
+<h1>Gestor de tareas</h1>
+
+<input type="text" id="taskName" placeholder="Nombre de la tarea">
+<input type="text" id="taskDesc" placeholder="Descripción">
+
+<button id="addTaskBtn">Agregar tarea</button>
+
+<div id="loading" style="display:none;">Cargando...</div>
+
+<h2>Pendientes</h2>
+<div id="pendingList"></div>
+
+<h2>Completadas</h2>
+<div id="completedList"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
